@@ -46,6 +46,7 @@ char default_program[] =
 
 #include "storage.h"
 
+#define CONFIG_TCC_STATIC 1
 #define TCC_TARGET_ARM 1
 #include "libtcc.h"
 
@@ -83,7 +84,8 @@ int main() {
   tcc_state = tcc_new();
   if (!tcc_state) {
     fprintf(stderr, "ERR: failed create TCC state\n");
-    eadk_timing_msleep(1000);
+    tcc_delete(tcc_state); // delete the state
+    eadk_timing_msleep(2000);
     exit(1);
   }
 
@@ -100,6 +102,7 @@ int main() {
 
   if (tcc_compile_string(tcc_state, default_program) == -1) {
     fprintf(stderr, "ERR: couldn't compile\n");
+    tcc_delete(tcc_state); // delete the state
     eadk_timing_msleep(2000);
     return 1;
   }
@@ -110,9 +113,10 @@ int main() {
   tcc_add_symbol(tcc_state, "eadk_timing_msleep_int", eadk_timing_msleep_int);
   tcc_add_symbol(tcc_state, "hello", hello);
 
-  // relocate the code
-  if (tcc_relocate(tcc_state) < 0) {
+  // Relocate the code (prepare for execution)
+  if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) {
     fprintf(stderr, "ERR: couldn't relocate code\n");
+    tcc_delete(tcc_state); // delete the state
     eadk_timing_msleep(2000);
     return 1;
   }
@@ -121,17 +125,20 @@ int main() {
   func_main_our_code = tcc_get_symbol(tcc_state, "main");
   if (!func_main_our_code) {
     fprintf(stderr, "ERR: no main function?\n");
+    tcc_delete(tcc_state); // delete the state
     eadk_timing_msleep(2000);
     return 1;
   }
 
-  // run the code
-  func_main_our_code(42);
+  // run the compiled code, print the return value (for debugging)
+  int ret_val = func_main_our_code(42);
+  fprintf(stderr, "Return: %d\n", ret_val);
+  eadk_timing_msleep(2000);
 
-  // delete the state
-  tcc_delete(tcc_state);
+  // Clean up TCC state
+  tcc_delete(tcc_state); // delete the state
 
-  eadk_timing_msleep(32000);
+  eadk_timing_msleep(2000);
   printf("End of interpretation of 'tcc.py'...\n");
   eadk_timing_msleep(2000);
 

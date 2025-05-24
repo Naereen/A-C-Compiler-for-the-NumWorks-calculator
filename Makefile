@@ -12,9 +12,9 @@ NWLINK = npx --yes -- nwlink
 LINK_GC = 1
 LTO = 1
 
-objs = $(addprefix output/tinycc.git/,\
-  libtcc.o \
-)
+# objs = $(addprefix output/tinycc.git/,\
+#   libtcc.o \
+# )
 
 #   eadk_lib.o
 objs += $(addprefix output/,\
@@ -24,15 +24,22 @@ objs += $(addprefix output/,\
   main.o \
 )
 
+# Path to your libtcc library
+TCC_LIB_DIR := $(CURDIR)/src/tinycc.git/
+
 CFLAGS = -std=c99
 CFLAGS += $(shell $(NWLINK) eadk-cflags-device)
 CFLAGS += -Os -Wall -Wextra -Wvla
 # CFLAGS += -Werror
 # CFLAGS += -ggdb
-CFLAGS += -Isrc/tiny-c-compiler
+
+CFLAGS += -I$(TCC_LIB_DIR)/
 
 LDFLAGS = -Wl,--relocatable
 LDFLAGS += $(shell $(NWLINK) eadk-ldflags-device)
+
+LDFLAGS += -L$(TCC_LIB_DIR)
+LDFLAGS += -ltcc1
 
 # Uncomment this when building the native Numworks app
 LDFLAGS += -nostartfiles
