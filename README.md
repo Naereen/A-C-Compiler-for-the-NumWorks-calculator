@@ -44,9 +44,12 @@ mkdir --parents src/
 git clone git://repo.or.cz/tinycc.git src/tinycc.git
 
 cd src/tinycc.git/
-./configure --cpu=armv7 --enable-cross
-make cross-arm-eabi
+./configure --cpu=armv7 --enable-cross --disable-static --targetos=none
+make cross-arm-eabihf
+make libtcc.a
 ```
+
+FIXME: this does not work (yet!)
 
 You should obtain a static library named `arm-eabi-libtcc1.a` (which wights about 30K on my machine).
 

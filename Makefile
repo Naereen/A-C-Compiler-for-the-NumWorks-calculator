@@ -25,7 +25,7 @@ objs += $(addprefix output/,\
 )
 
 # Path to your libtcc library
-TCC_LIB_DIR := $(CURDIR)/src/tinycc.git/
+TCC_LIB_DIR := src/tinycc.git/
 
 CFLAGS = -std=c99
 CFLAGS += $(shell $(NWLINK) eadk-cflags-device)
@@ -34,12 +34,13 @@ CFLAGS += -Os -Wall -Wextra -Wvla
 # CFLAGS += -ggdb
 
 CFLAGS += -I$(TCC_LIB_DIR)/
+CLIBS += -l:arm-eabi-libtcc1.a
 
 LDFLAGS = -Wl,--relocatable
 LDFLAGS += $(shell $(NWLINK) eadk-ldflags-device)
 
 LDFLAGS += -L$(TCC_LIB_DIR)
-LDFLAGS += -l:arm-eabi-libtcc1.a
+LDLIBS += -l:arm-eabi-libtcc1.a
 
 # Uncomment this when building the native Numworks app
 LDFLAGS += -nostartfiles
@@ -96,7 +97,7 @@ output/%.elf: output/%.nwa src/test.c
 
 output/tiny-c-compiler.nwa: $(objs)
 	@echo "LD      $@"
-	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -lm -o $@
+	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -lm $(LDLIBS) -o $@
 
 output/%.o: src/%.c
 	@mkdir -p $(@D)

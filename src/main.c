@@ -5,10 +5,10 @@
 
 #include "crt_stubs.h"
 
-#include <stdlib.h> // FIXME: it's not available for the NumWorks, innit?
-#include <stdio.h> // FIXME: it's not available for the NumWorks, innit?
-#include <stdint.h> // FIXME: it's not available for the NumWorks, innit?
-#include <string.h> // FIXME: it's not available for the NumWorks, innit?
+// #include <stdlib.h> // FIXME: it's not available for the NumWorks, innit?
+// #include <stdio.h> // FIXME: it's not available for the NumWorks, innit?
+// #include <stdint.h> // FIXME: it's not available for the NumWorks, innit?
+// #include <string.h> // FIXME: it's not available for the NumWorks, innit?
 
 void handle_error(void *opaque, const char *msg) {
     fprintf(opaque, "%s\n", msg);
@@ -116,7 +116,7 @@ int main() {
   // const char * code_to_execute = default_program;
   const char * code_to_execute = code;
 
-  if (tcc_compile_string(tcc_state, default_program) == -1) {
+  if (tcc_compile_string(tcc_state, code_to_execute) == -1) {
     fprintf(stderr, "ERR: couldn't compile\n");
     tcc_delete(tcc_state); // delete the state
     eadk_timing_msleep(2000);
