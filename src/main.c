@@ -34,7 +34,7 @@ void eadk_timing_msleep_int(int ms) {
 const char hello[] = "Hello World (from TCC)!";
 
 // this long string is the default program to be run if nothing is read from 'tcc.py'
-char default_program[] =
+char long_test_program[] =
 //"#include <tcclib.h>\n" /* include the "Simple libc header for TCC" */
 "extern int add(int a, int b);\n"
 "extern void eadk_timing_msleep_int(int ms);\n"
@@ -50,11 +50,23 @@ char default_program[] =
 "int main(int argc, char** argv) {\n"
 "    printf(\"%s\\n\", hello);\n"
 "    eadk_timing_msleep_int(1000);\n"
-"    int n = 32; // Default value.\n"
+"    int n = 2; // Default value.\n"
 "    printf(\"fib(%d) = %d\\n\", n, fib(n));\n"
 "    eadk_timing_msleep_int(1000);\n"
 "    printf(\"add(%d, %d) = %d\\n\", n, 2 * n, add(n, 2 * n));\n"
 "    eadk_timing_msleep_int(1000);\n"
+"    return 0;\n"
+"}\n";
+
+// this long string is the default program to be run if nothing is read from 'tcc.py'
+char default_program[] =
+//"#include <tcclib.h>\n" /* include the "Simple libc header for TCC" */
+"extern int add(int a, int b);\n"
+"extern void eadk_timing_msleep_int(int ms);\n"
+"extern const char hello[];\n"
+"\n"
+"int main(int argc, char** argv) {\n"
+"    printf(\"%s\\n\", hello);\n"
 "    return 0;\n"
 "}\n";
 
@@ -153,7 +165,7 @@ int main(int argc, char ** argv) {
 
   int ret_val = tcc_run(tcc_state, argc, argv);
 
-  fprintf(stderr, "Return: %d\n", ret_val);
+  fprintf(stderr, "ERR: Return: %d\n", ret_val);
   eadk_timing_msleep(2000);
 
   // Clean up TCC state
