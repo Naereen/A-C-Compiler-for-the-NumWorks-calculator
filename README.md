@@ -13,7 +13,7 @@ Installing is rather easy:
 
 1. Download the latest `tiny-c-compiler.nwa ` file from the [Releases](https://github.com/Naereen/A-C-Compiler-for-the-NumWorks-calculator/releases) page ;
 2. This Release page is not-yet ready on this project, use [this folder instead](https://perso.crans.org/besson/publis/Numworks-apps/), and [this link](https://perso.crans.org/besson/publis/Numworks-apps/tiny-c-compiler.nwa ) ;
-3. Head to [my.numworks.com/apps](https://my.numworks.com/apps) to send the `nwa` file on your calculator (on Google Chrome browser). On [this page](https://my.numworks.com/python/lilian-besson-1/javascript) you will be able to also send a default example of a JavaScript file (a tiny test script), and you can edit it yourself later on, on your calculator.
+3. Head to [my.numworks.com/apps](https://my.numworks.com/apps) to send the `nwa` file on your calculator (on Google Chrome browser). On [this page](https://my.numworks.com/python/lilian-besson-1/tcc) you will be able to also send a default example of a C file (a tiny test script), and you can edit it yourself later on, on your calculator.
 
 ## How to use the app
 
@@ -21,7 +21,7 @@ Just launch the app, and it will read and execute your script `tcc.py`!
 
 This script should be located in the `tcc.py` file, that you can create, edit and save **from within your NumWorks!**.
 
-If you want a demo, use [this `tcc.py` script](https://my.numworks.com/python/lilian-besson-1/javascript), that you can install on your NumWorks calculator, directly from their website (from my user space).
+If you want a demo, use [this `tcc.py` script](https://my.numworks.com/python/lilian-besson-1/tcc), that you can install on your NumWorks calculator, directly from their website (from my user space).
 
 ## Dependencies
 
@@ -35,6 +35,25 @@ To build this sample app, you will need to install the [embedded ARM toolchain](
 brew install numworks/tap/arm-none-eabi-gcc node # Or equivalent on your OS
 npm install -g nwlink
 make clean && make build
+```
+
+Be sure to download the sources for TinyCC and compile them with the correct options:
+
+```shell
+mkdir --parents src/
+git clone git://repo.or.cz/tinycc.git src/tinycc.git
+
+cd src/tinycc.git/
+./configure --cpu=armv7 --enable-cross
+make cross-arm-eabi
+```
+
+You should obtain a static library named `arm-eabi-libtcc1.a` (which wights about 30K on my machine).
+
+```shell
+ls -larth src/tinycc.git/arm-eabi-libtcc1.a
+du -b src/tinycc.git/arm-eabi-libtcc1.a
+file src/tinycc.git/arm-eabi-libtcc1.a
 ```
 
 ----
