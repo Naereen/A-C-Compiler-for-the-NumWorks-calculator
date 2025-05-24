@@ -11,8 +11,8 @@
 
 Installing is rather easy:
 
-1. Download the latest `tiny-c-compiler.nwa ` file from the [Releases](https://github.com/Naereen/A-C-Compiler-for-the-NumWorks-calculator/releases) page ;
-2. This Release page is not-yet ready on this project, use [this folder instead](https://perso.crans.org/besson/publis/Numworks-apps/), and [this link](https://perso.crans.org/besson/publis/Numworks-apps/tiny-c-compiler.nwa ) ;
+1. (not yet, see 2) Download the latest `tiny-c-compiler.nwa ` file from the [Releases](https://github.com/Naereen/A-C-Compiler-for-the-NumWorks-calculator/releases) page ;
+2. This Release page is not-yet ready, on this project, use [this folder instead](https://perso.crans.org/besson/publis/Numworks-apps/), and [this direct link](https://perso.crans.org/besson/publis/Numworks-apps/tiny-c-compiler.nwa ) ;
 3. Head to [my.numworks.com/apps](https://my.numworks.com/apps) to send the `nwa` file on your calculator (on Google Chrome browser). On [this page](https://my.numworks.com/python/lilian-besson-1/tcc) you will be able to also send a default example of a C file (a tiny test script), and you can edit it yourself later on, on your calculator.
 
 ## How to use the app
@@ -37,26 +37,30 @@ npm install -g nwlink
 make clean && make build
 ```
 
-Be sure to download the sources for TinyCC and compile them with the correct options:
+Be sure to download the sources for TinyCC and compile them with the correct options.
+I've modified a tiny bit the sources of TinyCC, so until I find a better solution, [use my fork](https://github.com/Naereen/tinycc):
 
 ```shell
 mkdir --parents src/
-git clone git://repo.or.cz/tinycc.git src/tinycc.git
+git clone git@github.com:Naereen/tinycc.git src/tinycc.git
 
 cd src/tinycc.git/
-./configure --cpu=armv7 --enable-cross --disable-static --targetos=none
-make cross-arm-eabihf
-make libtcc.a
+./configure --cpu=armv7 --enable-cross --disable-static --targetos=none --config-predefs=no --config-backtrace=no
+# make cross-arm-eabihf # no need, I think
+make arm-eabihf-libtcc.a
 ```
 
-FIXME: this does not work (yet!)
-
-You should obtain a static library named `arm-eabi-libtcc1.a` (which wights about 30K on my machine).
+You should obtain a static library named `arm-eabi-libtcc1.a` (which wights about 513K on my machine):
 
 ```shell
-ls -larth src/tinycc.git/arm-eabi-libtcc1.a
-du -b src/tinycc.git/arm-eabi-libtcc1.a
-file src/tinycc.git/arm-eabi-libtcc1.a
+$ ls -larth src/tinycc.git/arm-eabihf-libtcc.a
+-rw-rw-r-- 1 lilian lilian 513K mai   24 17:36 arm-eabihf-libtcc.a
+
+$ du -b     src/tinycc.git/arm-eabihf-libtcc.a
+524774  arm-eabihf-libtcc.a
+
+$ file      src/tinycc.git/arm-eabihf-libtcc.a
+arm-eabihf-libtcc.a: current ar archive
 ```
 
 ----
