@@ -3,9 +3,8 @@
 #
 # See https://github.com/Naereen/A-C-Compiler-for-the-NumWorks-calculator
 # See https://yaya-cout.github.io/Nwagyu/guide/help/how-to-install.html
-# See https://github.com/espruino/Espruino/blob/master/README_Building.md#embedding-in-other-applications for Espruino embedding
-# See https://bellard.org/quickjs/ for old QuickJS
 #
+
 Q ?= @
 CC = arm-none-eabi-gcc
 NWLINK = npx --yes -- nwlink
@@ -19,6 +18,7 @@ LTO = 1
 #   eadk_lib.o
 objs += $(addprefix output/,\
   storage.o \
+  tcc_stubs.o \
   crt_stubs.o \
   icon.o \
   main.o \
@@ -30,19 +30,23 @@ TCC_LIB_DIR := src/tinycc.git/
 CFLAGS = -std=c99
 CFLAGS += $(shell $(NWLINK) eadk-cflags-device)
 CFLAGS += -Os -Wall -Wextra -Wvla
-# CFLAGS += -Werror
 # CFLAGS += -ggdb
-
-CFLAGS += -I$(TCC_LIB_DIR)/
-CLIBS += -l:arm-eabi-libtcc1.a
 
 LDFLAGS = -Wl,--relocatable
 LDFLAGS += $(shell $(NWLINK) eadk-ldflags-device)
 
+# Include the TCC library directory
+CFLAGS += -I$(TCC_LIB_DIR)/
 LDFLAGS += -L$(TCC_LIB_DIR)
-LDLIBS += -l:arm-eabi-libtcc1.a
 
-# Uncomment this when building the native Numworks app
+# This is the embedded *runtime* library, NOT the one we want!
+# CLIBS += -l:arm-eabi-libtcc1.a
+# LDLIBS += -l:arm-eabi-libtcc1.a
+
+# This should be the good library to include!
+CLIBS += -l:arm-eabihf-libtcc.a
+LDLIBS += -l:arm-eabihf-libtcc.a
+
 LDFLAGS += -nostartfiles
 
 # LDFLAGS += --specs=nano.specs # Alternatively, use nano C lib

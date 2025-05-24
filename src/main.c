@@ -4,11 +4,12 @@
 //
 
 #include "crt_stubs.h"
+#include "tcc_stubs.h"
 
-// #include <stdlib.h> // FIXME: it's not available for the NumWorks, innit?
-// #include <stdio.h> // FIXME: it's not available for the NumWorks, innit?
-// #include <stdint.h> // FIXME: it's not available for the NumWorks, innit?
-// #include <string.h> // FIXME: it's not available for the NumWorks, innit?
+#include <stdlib.h> // FIXME: it's not available for the NumWorks, innit?
+#include <stdio.h> // FIXME: it's not available for the NumWorks, innit?
+#include <stdint.h> // FIXME: it's not available for the NumWorks, innit?
+#include <string.h> // FIXME: it's not available for the NumWorks, innit?
 
 void handle_error(void *opaque, const char *msg) {
     fprintf(opaque, "%s\n", msg);
