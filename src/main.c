@@ -1,6 +1,19 @@
+//
+// C main.c file (main application file)
+// for the Tiny C Compiler (NWA) app for the Numwoks calculators
+//
+
 #include "crt_stubs.h"
 
-#include <stdint.h>
+#include <stdlib.h> // FIXME: it's not available for the NumWorks, innit?
+#include <stdio.h> // FIXME: it's not available for the NumWorks, innit?
+#include <stdint.h> // FIXME: it's not available for the NumWorks, innit?
+#include <string.h> // FIXME: it's not available for the NumWorks, innit?
+
+void handle_error(void *opaque, const char *msg) {
+    fprintf(opaque, "%s\n", msg);
+}
+
 #include <eadk.h>
 
 // TODO: write a wrapper file/lib so that the C code interpreted on the NumWorks has correct access to the EADK lib!
@@ -78,7 +91,6 @@ int main() {
 
   // From https://github.com/Tiny-C-Compiler/tinycc-mirror-repository/blob/mob/tests/libtcc_test.c
   TCCState *tcc_state;
-  int i = 0;
   int (*func_main_our_code)(int);
 
   tcc_state = tcc_new();
@@ -86,7 +98,7 @@ int main() {
     fprintf(stderr, "ERR: failed create TCC state\n");
     tcc_delete(tcc_state); // delete the state
     eadk_timing_msleep(2000);
-    exit(1);
+    return 1;
   }
 
   /* set custom error/warning printer */
@@ -99,6 +111,10 @@ int main() {
   // MUST BE CALLED before any compilation
   // the output type is in memory, not on a file
   tcc_set_output_type(tcc_state, TCC_OUTPUT_MEMORY);
+
+  // TODO: first test a tiny C code, then more!
+  // const char * code_to_execute = default_program;
+  const char * code_to_execute = code;
 
   if (tcc_compile_string(tcc_state, default_program) == -1) {
     fprintf(stderr, "ERR: couldn't compile\n");
@@ -114,7 +130,8 @@ int main() {
   tcc_add_symbol(tcc_state, "hello", hello);
 
   // Relocate the code (prepare for execution)
-  if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) {
+  // if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) {
+  if (tcc_relocate(tcc_state) < 0) {
     fprintf(stderr, "ERR: couldn't relocate code\n");
     tcc_delete(tcc_state); // delete the state
     eadk_timing_msleep(2000);
