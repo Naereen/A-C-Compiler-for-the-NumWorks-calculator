@@ -2,3 +2,4 @@ output/
 .vscode/
 *~
 *.log
+src/tinycc.git/
