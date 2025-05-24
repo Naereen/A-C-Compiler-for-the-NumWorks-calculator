@@ -39,7 +39,7 @@ LDFLAGS = -Wl,--relocatable
 LDFLAGS += $(shell $(NWLINK) eadk-ldflags-device)
 
 LDFLAGS += -L$(TCC_LIB_DIR)
-LDFLAGS += -ltcc1
+LDFLAGS += -l:arm-eabi-libtcc1.a
 
 # Uncomment this when building the native Numworks app
 LDFLAGS += -nostartfiles
