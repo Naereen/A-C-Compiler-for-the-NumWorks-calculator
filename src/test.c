@@ -1,7 +1,8 @@
 // This is NOT a Python script
 // This is a C program!
 
-#include <tcclib.h> /* include the "Simple libc header for TCC" */
+#include <tcclib.h> // include the "Simple libc header for TCC"
+// #include <stdio.h> // include <stdio.h> if running on a real computer
 
 extern int add(int a, int b);
 
@@ -17,10 +18,11 @@ int fib(int n) {
     }
 }
 
-int main(int n) {
+int main(int argc, char** argv) {
     printf("%s\n", hello);
     eadk_timing_msleep_int(1000);
-    printf("fib(%d) = %d\n", n, fib(n));
+    int n = 32; // Default value
+    printf("fib(%d) = %d (= 2178309)\n", n, fib(n));
     eadk_timing_msleep_int(1000);
     printf("add(%d, %d) = %d\n", n, 2 * n, add(n, 2 * n));
     eadk_timing_msleep_int(1000);

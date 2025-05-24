@@ -5,7 +5,8 @@
 # See https://yaya-cout.github.io/Nwagyu/guide/help/how-to-install.html
 #
 
-Q ?= @
+# Q ?= @
+Q ?=
 CC = arm-none-eabi-gcc
 NWLINK = npx --yes -- nwlink
 LINK_GC = 1
@@ -25,7 +26,7 @@ objs += $(addprefix output/,\
 )
 
 # Path to your libtcc library
-TCC_LIB_DIR := src/tinycc.git/
+TCC_LIB_DIR := ./src/tinycc.git/
 
 CFLAGS = -std=c99
 CFLAGS += $(shell $(NWLINK) eadk-cflags-device)
@@ -36,7 +37,7 @@ LDFLAGS = -Wl,--relocatable
 LDFLAGS += $(shell $(NWLINK) eadk-ldflags-device)
 
 # Include the TCC library directory
-CFLAGS += -I$(TCC_LIB_DIR)/
+CFLAGS += -I$(TCC_LIB_DIR)
 LDFLAGS += -L$(TCC_LIB_DIR)
 
 # This is the embedded *runtime* library, NOT the one we want!
@@ -45,6 +46,7 @@ LDFLAGS += -L$(TCC_LIB_DIR)
 
 # This should be the good library to include!
 CLIBS += -l:arm-eabihf-libtcc.a
+LDLIBS += -l:arm-eabihf-libtcc.a
 LDLIBS += -l:arm-eabihf-libtcc.a
 
 LDFLAGS += -nostartfiles
@@ -101,12 +103,12 @@ output/%.elf: output/%.nwa src/test.c
 
 output/tiny-c-compiler.nwa: $(objs)
 	@echo "LD      $@"
-	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -lm $(LDLIBS) -o $@
+	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -lm $(LDLIBS)
 
 output/%.o: src/%.c
 	@mkdir -p $(@D)
 	@echo "CC      $^"
-	$(Q) $(CC) $(CFLAGS) -c $^ -o $@
+	$(Q) $(CC) $(CFLAGS) -c $^ -o $@ -lm $(CLIBS)
 
 output/icon.o: src/icon.png
 	@echo "ICON    $<"

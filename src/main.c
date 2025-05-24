@@ -47,9 +47,10 @@ char default_program[] =
 "    }\n"
 "}\n"
 "\n"
-"int main(int n) {\n"
+"int main(int argc, char** argv) {\n"
 "    printf(\"%s\\n\", hello);\n"
 "    eadk_timing_msleep_int(1000);\n"
+"    int n = 32; // Default value.\n"
 "    printf(\"fib(%d) = %d\\n\", n, fib(n));\n"
 "    eadk_timing_msleep_int(1000);\n"
 "    printf(\"add(%d, %d) = %d\\n\", n, 2 * n, add(n, 2 * n));\n"
@@ -60,8 +61,6 @@ char default_program[] =
 
 #include "storage.h"
 
-#define CONFIG_TCC_STATIC 1
-#define TCC_TARGET_ARM 1
 #include "libtcc.h"
 
 const char eadk_app_name[] __attribute__((section(".rodata.eadk_app_name"))) = "Tiny C Compiler";
@@ -72,8 +71,8 @@ void __exidx_start() { }
 void __exidx_end() { }
 
 
-// int main(int argc, char ** argv) {
-int main() {
+// int main() {
+int main(int argc, char ** argv) {
 
   printf("Tiny C Compiler v0.0.1\n");
   eadk_timing_msleep(1000);
@@ -130,26 +129,30 @@ int main() {
   tcc_add_symbol(tcc_state, "eadk_timing_msleep_int", eadk_timing_msleep_int);
   tcc_add_symbol(tcc_state, "hello", hello);
 
-  // Relocate the code (prepare for execution)
-  // if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) {
-  if (tcc_relocate(tcc_state) < 0) {
-    fprintf(stderr, "ERR: couldn't relocate code\n");
-    tcc_delete(tcc_state); // delete the state
-    eadk_timing_msleep(2000);
-    return 1;
-  }
+  // FIXME: this tcc_relocate
+  // // Relocate the code (prepare for execution)
+  // // if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) { // XXX: didn't work
+  // if (tcc_relocate(tcc_state) < 0) {
+  //   fprintf(stderr, "ERR: couldn't relocate code\n");
+  //   tcc_delete(tcc_state); // delete the state
+  //   eadk_timing_msleep(2000);
+  //   return 1;
+  // }
 
-  // get entry symbol
-  func_main_our_code = tcc_get_symbol(tcc_state, "main");
-  if (!func_main_our_code) {
-    fprintf(stderr, "ERR: no main function?\n");
-    tcc_delete(tcc_state); // delete the state
-    eadk_timing_msleep(2000);
-    return 1;
-  }
+  // // get entry symbol
+  // func_main_our_code = tcc_get_symbol(tcc_state, "main");
+  // if (!func_main_our_code) {
+  //   fprintf(stderr, "ERR: no main function?\n");
+  //   tcc_delete(tcc_state); // delete the state
+  //   eadk_timing_msleep(2000);
+  //   return 1;
+  // }
 
-  // run the compiled code, print the return value (for debugging)
-  int ret_val = func_main_our_code(42);
+  // // run the compiled code, print the return value (for debugging)
+  // int ret_val = func_main_our_code(42);
+
+  int ret_val = tcc_run(tcc_state, argc, argv);
+
   fprintf(stderr, "Return: %d\n", ret_val);
   eadk_timing_msleep(2000);
 
