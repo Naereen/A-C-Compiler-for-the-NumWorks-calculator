@@ -17,7 +17,7 @@ void eadk_timing_msleep_int(int ms) {
 }
 
 // this string is referenced by the generated code
-const char hello[] = "Hello World!";
+const char hello[] = "Hello World (from TCC)!";
 
 // this long string is the default program to be run if nothing is read from 'tcc.py'
 char default_program[] =
@@ -25,8 +25,7 @@ char default_program[] =
 "extern int add(int a, int b);\n"
 "extern void eadk_timing_msleep_int(int ms);\n"
 "extern const char hello[];\n"
-"int fib(int n)\n"
-"{\n"
+"int fib(int n) {\n"
 "    if (n <= 2) {\n"
 "        return 1;\n"
 "    } else {\n"
@@ -34,8 +33,7 @@ char default_program[] =
 "    }\n"
 "}\n"
 "\n"
-"int func_main_our_code(int n)\n"
-"{\n"
+"int main(int n) {\n"
 "    printf(\"%s\\n\", hello);\n"
 "    eadk_timing_msleep_int(1000);\n"
 "    printf(\"fib(%d) = %d\\n\", n, fib(n));\n"
@@ -120,7 +118,7 @@ int main() {
   }
 
   // get entry symbol
-  func_main_our_code = tcc_get_symbol(tcc_state, "func_main_our_code");
+  func_main_our_code = tcc_get_symbol(tcc_state, "main");
   if (!func_main_our_code) {
     fprintf(stderr, "ERR: no main function?\n");
     eadk_timing_msleep(2000);
