@@ -103,7 +103,7 @@ output/%.elf: output/%.nwa src/test.c
 
 output/tiny-c-compiler.nwa: $(objs)
 	@echo "LD      $@"
-	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -lm $(LDLIBS)
+	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -lm $(LDLIBS) -lCMSIS_CORE
 
 output/%.o: src/%.c
 	@mkdir -p $(@D)

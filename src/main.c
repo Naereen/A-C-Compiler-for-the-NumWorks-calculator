@@ -6,10 +6,17 @@
 #include "crt_stubs.h"
 #include "tcc_stubs.h"
 
-#include <stdlib.h> // FIXME: it's not available for the NumWorks, innit?
-#include <stdio.h> // FIXME: it's not available for the NumWorks, innit?
-#include <stdint.h> // FIXME: it's not available for the NumWorks, innit?
-#include <string.h> // FIXME: it's not available for the NumWorks, innit?
+// ADD THIS LINE
+// Or <stm32f7xx_hal.h> or <core_cm7.h>
+// The exact path depends on NumWorks's SDK structure.
+// Try <stm32f7xx.h> first, or <core_cm7.h> if that's available directly.
+// Or look for a file like "stm32f7xx_hal_cortex.h"
+#include "core_cm7.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
 void handle_error(void *opaque, const char *msg) {
     fprintf(opaque, "%s\n", msg);
@@ -60,13 +67,7 @@ char long_test_program[] =
 
 // this long string is the default program to be run if nothing is read from 'tcc.py'
 char default_program[] =
-//"#include <tcclib.h>\n" /* include the "Simple libc header for TCC" */
-"extern int add(int a, int b);\n"
-"extern void eadk_timing_msleep_int(int ms);\n"
-"extern const char hello[];\n"
-"\n"
-"int main(int argc, char** argv) {\n"
-"    printf(\"%s\\n\", hello);\n"
+"int main(int n) {\n"
 "    return 0;\n"
 "}\n";
 
@@ -113,7 +114,16 @@ int main(int argc, char ** argv) {
     return 1;
   }
 
-  /* set custom error/warning printer */
+  // Initialize your TCC heap (reset the bump allocator)
+  tcc_numworks_heap_init();
+
+  // Set custom memory allocators
+  // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
+  // tcc_set_realloc(numworks_tcc_realloc);
+  // tcc_set_realloc(malloc, realloc, free);
+  tcc_set_realloc(realloc);
+
+  // set custom error/warning printer
   tcc_set_error_func(tcc_state, stderr, handle_error);
 
   // Getting ready to execute the code
@@ -125,8 +135,11 @@ int main(int argc, char ** argv) {
   tcc_set_output_type(tcc_state, TCC_OUTPUT_MEMORY);
 
   // TODO: first test a tiny C code, then more!
-  // const char * code_to_execute = default_program;
-  const char * code_to_execute = code;
+  const char * code_to_execute = default_program;
+  // TODO: then test a longer C code, then more!
+  // const char * code_to_execute = long_test_program;
+  // TODO: then from the local storage
+  // const char * code_to_execute = code;
 
   if (tcc_compile_string(tcc_state, code_to_execute) == -1) {
     fprintf(stderr, "ERR: couldn't compile\n");
@@ -142,30 +155,42 @@ int main(int argc, char ** argv) {
   tcc_add_symbol(tcc_state, "hello", hello);
 
   // FIXME: this tcc_relocate
-  // // Relocate the code (prepare for execution)
-  // // if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) { // XXX: didn't work
-  // if (tcc_relocate(tcc_state) < 0) {
-  //   fprintf(stderr, "ERR: couldn't relocate code\n");
-  //   tcc_delete(tcc_state); // delete the state
-  //   eadk_timing_msleep(2000);
-  //   return 1;
-  // }
+  // Relocate the code (prepare for execution)
+  // if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) { // XXX: didn't work
+  if (tcc_relocate(tcc_state) < 0) {
+    fprintf(stderr, "ERR: couldn't relocate code\n");
+    tcc_delete(tcc_state); // delete the state
+    eadk_timing_msleep(2000);
+    return 1;
+  }
 
-  // // get entry symbol
-  // func_main_our_code = tcc_get_symbol(tcc_state, "main");
-  // if (!func_main_our_code) {
-  //   fprintf(stderr, "ERR: no main function?\n");
-  //   tcc_delete(tcc_state); // delete the state
-  //   eadk_timing_msleep(2000);
-  //   return 1;
-  // }
+  // get entry symbol
+  func_main_our_code = tcc_get_symbol(tcc_state, "main");
+  if (!func_main_our_code) {
+    fprintf(stderr, "ERR: no main function?\n");
+    tcc_delete(tcc_state); // delete the state
+    eadk_timing_msleep(2000);
+    return 1;
+  }
 
-  // // run the compiled code, print the return value (for debugging)
+  // See https://github.com/numworks/epsilon/blob/9072ab80a16d4c15222699f73896282a65eecd54/python/src/py/emitglue.c#L119 for an internal usage of this code, in the micropython app for epsilon OS
+  // !!! IMPORTANT: Instruction Cache Invalidation !!!
+  // Before jumping to the compiled code, you MUST invalidate the instruction cache.
+  // The exact CMSIS function name might vary slightly based on your specific
+  // NumWorks SDK or HAL, but it's typically:
+  SCB_CleanDCache();       // Flush any pending data writes to memory
+  SCB_InvalidateICache();  // Invalidate instruction cache to ensure new code is fetched
+  // Or if you can target a specific region:
+  // SCB_CleanDCache_by_addr(start_addr, size);
+  // SCB_InvalidateICache_by_addr(start_addr, size);
+  // Finding start_addr and size: TCC doesn't easily expose this, often
+  // you'd invalidate the entire heap where code could be.
+
+  // run the compiled code, print the return value (for debugging)
   // int ret_val = func_main_our_code(42);
-
   int ret_val = tcc_run(tcc_state, argc, argv);
 
-  fprintf(stderr, "ERR: Return: %d\n", ret_val);
+  fprintf(stderr, "Return: %d\n", ret_val);
   eadk_timing_msleep(2000);
 
   // Clean up TCC state

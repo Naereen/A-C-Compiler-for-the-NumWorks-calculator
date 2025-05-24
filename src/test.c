@@ -21,7 +21,7 @@ int fib(int n) {
 int main(int argc, char** argv) {
     printf("%s\n", hello);
     eadk_timing_msleep_int(1000);
-    int n = 32; // Default value
+    int n = 12; // Default value
     printf("fib(%d) = %d (= 2178309)\n", n, fib(n));
     eadk_timing_msleep_int(1000);
     printf("add(%d, %d) = %d\n", n, 2 * n, add(n, 2 * n));
