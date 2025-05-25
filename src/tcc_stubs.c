@@ -86,7 +86,8 @@ int mprotect(void *addr, size_t len, int prot) {
     // However, for simplicity, a direct return 0 is often sufficient.
 
     // You can add a debug print if you want to see when TCC calls this
-    // printf("mprotect called for addr %p, len %zu, prot %d\n", addr, len, prot);
+    printf("mprotect(%p, %zu, %d)", addr, len, prot);
+    eadk_timing_msleep(1000);
 
     // It's generally safe to just return success on platforms where memory
     // is uniformly executable (like typical embedded SRAM).
@@ -133,7 +134,8 @@ int mprotect(void *addr, size_t len, int prot) {
 // Start with a conservative size, e.g., 64KB (64 * 1024).
 // The maximum you can allocate here is the TOTAL remaining free SRAM
 // AFTER the NumWorks firmware and your app's core code/data.
-#define TCC_HEAP_SIZE (16 * 1024) // Example: 16KB
+// #define TCC_HEAP_SIZE (48 * 1024) // Example: 48KB
+#define TCC_HEAP_SIZE 0           // Example: 0KB
 
 // Declare the TCC heap buffer
 // It's uninitialized, so it goes into .bss (saving flash space).
@@ -154,7 +156,9 @@ void *numworks_tcc_malloc(size_t size) {
     if (s_tcc_heap_current_offset + aligned_size > TCC_HEAP_SIZE) {
         // Out of memory within our designated TCC heap
         // You MUST log this or display on screen for debugging
-        // For example: numworks_display_print("TCC_MALLOC FAILED: Req %zu bytes, Free %zu bytes\n", size, TCC_HEAP_SIZE - s_tcc_heap_current_offset);
+        // For example:
+        printf("TCC_MALLOC FAILED: Req %zu bytes, Free %zu bytes", size, TCC_HEAP_SIZE - s_tcc_heap_current_offset);
+        eadk_timing_msleep(1000);
         return NULL;
     }
 
@@ -162,7 +166,8 @@ void *numworks_tcc_malloc(size_t size) {
     s_tcc_heap_current_offset += aligned_size;
 
     // Optional debug print (ensure your `printf` or display function works!)
-    // numworks_display_print("TCC_MALLOC: Req %zu (aligned %zu), Got %p, Offset %zu\n", size, aligned_size, ptr, s_tcc_heap_current_offset);
+    printf("TCC_MALLOC: Req %zu (aligned %zu), Got %p, Offset %zu", size, aligned_size, ptr, s_tcc_heap_current_offset);
+    eadk_timing_msleep(1000);
     return ptr;
 }
 
@@ -205,5 +210,6 @@ void *numworks_tcc_realloc(void *ptr, size_t size) {
 void numworks_tcc_free(void *ptr) {
     // In a bump allocator, memory is only reclaimed by resetting the `s_tcc_heap_current_offset`
     // pointer (i.e., calling `tcc_numworks_heap_init()`)
-    // numworks_display_print("TCC_FREE: %p (no-op)\n", ptr);
+    printf("TCC_FREE: %p (no-op)", ptr);
+    eadk_timing_msleep(1000);
 }
