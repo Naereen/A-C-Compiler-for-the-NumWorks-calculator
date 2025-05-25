@@ -3,9 +3,13 @@
 // for the Tiny C Compiler (NWA) app for the Numwoks calculators
 //
 
+#include <eadk.h>
 #include "crt_stubs.h"
 #include "tcc_stubs.h"
 
+// See :
+// https://community.arm.com/arm-community-blogs/b/tools-software-ides-blog/posts/using-cmsis-with-arm-compiler-6-without-an-ide
+//
 #define __FPU_PRESENT 1
 #define __FPU_USED 1
 // DONE: this should come from https://github.com/STMicroelectronics/cmsis-device-f7
@@ -22,7 +26,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <eadk.h>
 
 void handle_error(void *opaque, const char *msg) {
   // fprintf(opaque, "%s\n", msg);
@@ -90,7 +93,7 @@ void __exidx_end() { }
 // int main() {
 int main(int argc, char ** argv) {
 
-  printf("Tiny C Compiler v0.0.2\n");
+  printf("Tiny C Compiler v0.0.3\n");
   eadk_timing_msleep(2000);
 
   printf("Reading from 'tcc.py' file...\n");
@@ -125,22 +128,22 @@ int main(int argc, char ** argv) {
     return 1;
   }
 
-  // // Initialize your TCC heap (reset the bump allocator)
-  // printf("Initialize our TCC heap...\n");
-  // eadk_timing_msleep(2000);
-  // tcc_numworks_heap_init();
-
-  // // Set custom memory allocators, from our tcc_stubs implementation:
-  // printf("tcc_set_realloc(numworks_tcc_realloc)\n");
-  // eadk_timing_msleep(2000);
-  // tcc_set_realloc(numworks_tcc_realloc);
-  // // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
-
-  // Use stdlib's memory allocators:
-  printf("tcc_set_realloc(realloc)\n");
+  // Initialize your TCC heap (reset the bump allocator)
+  printf("Initialize our TCC heap...\n");
   eadk_timing_msleep(2000);
-  tcc_set_realloc(realloc);
-  // tcc_set_realloc(malloc, realloc, free);
+  tcc_numworks_heap_init();
+
+  // Set custom memory allocators, from our tcc_stubs implementation:
+  printf("tcc_set_realloc(numworks_tcc_realloc)\n");
+  eadk_timing_msleep(2000);
+  tcc_set_realloc(numworks_tcc_realloc);
+  // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
+
+  // // Use stdlib's memory allocators:
+  // printf("tcc_set_realloc(realloc)\n");
+  // eadk_timing_msleep(2000);
+  // tcc_set_realloc(realloc);
+  // // tcc_set_realloc(malloc, realloc, free);
 
   // set custom error/warning printer
   printf("tcc_set_error_func(...)\n");

@@ -1,7 +1,9 @@
 // tcc_stubs.c
 
 #include <stdlib.h> // For NULL, size_t
-#include <string.h> // For strcpy
+#include <string.h> // For strcpy, strlen
+#include <stdio.h>  // For printf
+#include <eadk.h>   // For eadk_timing_msleep
 
 #define TCC_IS_NATIVE
 #include "libtcc.h" // for TCCState
@@ -14,6 +16,10 @@
 // It should allocate memory like realpath() usually does.
 char *realpath(const char *path, char *resolved_path)
 {
+    // Optional debug print
+    printf("realpath(%s, %s)\n", path, resolved_path);
+    eadk_timing_msleep(1000);
+
     // If resolved_path is NULL, realpath is expected to malloc.
     // If you don't want to support malloc in this stub, make it static buffer.
     // For now, let's just return a copy of the original path.
@@ -44,6 +50,10 @@ char *realpath(const char *path, char *resolved_path)
 // Return a fixed dummy path.
 char *getcwd(char *buf, size_t size)
 {
+    // Optional debug print
+    printf("getcwd(%s, %i)\n", buf, size);
+    eadk_timing_msleep(1000);
+
     const char *dummy_cwd = "/"; // Or "/app" or whatever makes sense for your context
     if (buf == NULL) {
         // getcwd usually mallocs if buf is NULL.
@@ -66,10 +76,10 @@ char *getcwd(char *buf, size_t size)
     }
 }
 
-// Dummy stub, doing nothing.
-void tcc_run_free(TCCState *s1) {
-    return;
-}
+// // Dummy stub, doing nothing.
+// void tcc_run_free(TCCState *s1) {
+//     return;
+// }
 
 #include <errno.h> // For EINVAL or other error codes if you wanted to be strict
 
@@ -86,7 +96,7 @@ int mprotect(void *addr, size_t len, int prot) {
     // However, for simplicity, a direct return 0 is often sufficient.
 
     // You can add a debug print if you want to see when TCC calls this
-    printf("mprotect(%p, %zu, %d)", addr, len, prot);
+    printf("mprotect(%p, %zu, %d)\n", addr, len, prot);
     eadk_timing_msleep(1000);
 
     // It's generally safe to just return success on platforms where memory
@@ -134,12 +144,12 @@ int mprotect(void *addr, size_t len, int prot) {
 // Start with a conservative size, e.g., 64KB (64 * 1024).
 // The maximum you can allocate here is the TOTAL remaining free SRAM
 // AFTER the NumWorks firmware and your app's core code/data.
-// #define TCC_HEAP_SIZE (48 * 1024) // Example: 48KB
-#define TCC_HEAP_SIZE 0           // Example: 0KB
+#define TCC_HEAP_SIZE (48 * 1024) // Example: 48KB
+// #define TCC_HEAP_SIZE 0           // Example: 0KB
 
 // Declare the TCC heap buffer
 // It's uninitialized, so it goes into .bss (saving flash space).
-static uint8_t s_tcc_heap_buffer[TCC_HEAP_SIZE];
+static uint8_t s_tcc_heap_buffer[TCC_HEAP_SIZE] = {0};
 static size_t s_tcc_heap_current_offset = 0; // Current allocation pointer for bump allocator
 
 // Function to reset the heap (call before each TCC compilation session if needed)
@@ -147,6 +157,14 @@ void tcc_numworks_heap_init() {
     s_tcc_heap_current_offset = 0;
     // Optionally, clear the buffer for debugging
     // memset(s_tcc_heap_buffer, 0, TCC_HEAP_SIZE);
+}
+
+// Your custom free for TCC (no-op for a bump allocator)
+void numworks_tcc_free(void *ptr) {
+    // In a bump allocator, memory is only reclaimed by resetting the `s_tcc_heap_current_offset`
+    // pointer (i.e., calling `tcc_numworks_heap_init()`)
+    printf("TCC_FREE: %p (no-op)\n", ptr);
+    eadk_timing_msleep(1000);
 }
 
 // Your custom malloc for TCC
@@ -157,7 +175,7 @@ void *numworks_tcc_malloc(size_t size) {
         // Out of memory within our designated TCC heap
         // You MUST log this or display on screen for debugging
         // For example:
-        printf("TCC_MALLOC FAILED: Req %zu bytes, Free %zu bytes", size, TCC_HEAP_SIZE - s_tcc_heap_current_offset);
+        printf("TCC_MALLOC FAIL: Req %zuB, Free %zuB\n", size, TCC_HEAP_SIZE - s_tcc_heap_current_offset);
         eadk_timing_msleep(1000);
         return NULL;
     }
@@ -165,8 +183,10 @@ void *numworks_tcc_malloc(size_t size) {
     void *ptr = &s_tcc_heap_buffer[s_tcc_heap_current_offset];
     s_tcc_heap_current_offset += aligned_size;
 
-    // Optional debug print (ensure your `printf` or display function works!)
-    printf("TCC_MALLOC: Req %zu (aligned %zu), Got %p, Offset %zu", size, aligned_size, ptr, s_tcc_heap_current_offset);
+    // Optional debug print
+    printf("TCC_MALLOC: Req %zu (aligned %zu)\n", size, aligned_size);
+    eadk_timing_msleep(1000);
+    printf("TCC_MALLOC: Got %p, Offset %zu\n", ptr, s_tcc_heap_current_offset);
     eadk_timing_msleep(1000);
     return ptr;
 }
@@ -204,12 +224,4 @@ void *numworks_tcc_realloc(void *ptr, size_t size) {
         // We'll rely on TCC internal logic not to require the contents to be copied by realloc for now.
     }
     return new_ptr;
-}
-
-// Your custom free for TCC (no-op for a bump allocator)
-void numworks_tcc_free(void *ptr) {
-    // In a bump allocator, memory is only reclaimed by resetting the `s_tcc_heap_current_offset`
-    // pointer (i.e., calling `tcc_numworks_heap_init()`)
-    printf("TCC_FREE: %p (no-op)", ptr);
-    eadk_timing_msleep(1000);
 }

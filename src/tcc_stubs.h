@@ -18,8 +18,8 @@ char *realpath(const char *path, char *resolved_path);
 // Return a fixed dummy path.
 char *getcwd(char *buf, size_t size);
 
-// Dummy stub, doing nothing.
-void tcc_run_free(TCCState *s1);
+// // Dummy stub, doing nothing.
+// void tcc_run_free(TCCState *s1);
 
 // Dummy stub, doing nothing.
 int mprotect(void *addr, size_t len, int prot);
