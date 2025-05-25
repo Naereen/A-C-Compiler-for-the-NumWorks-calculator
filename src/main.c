@@ -9,11 +9,13 @@
 #define __FPU_PRESENT 1
 #define __FPU_USED 1
 // TODO: this should come from https://github.com/STMicroelectronics/cmsis-device-f7
+#define STM32F730xx
 #include "stm32f7xx.h"
-// TODO: this should come from https://github.com/ARM-software/CMSIS_5/releases/tag/5.9.0
-// #include "ARMCM4_FP.h"
-#include "ARMCM7.h"
-// #include "core_cm7.h"
+
+// // TODO: this should come from https://github.com/ARM-software/CMSIS_5/releases/tag/5.9.0
+// // #include "ARMCM4_FP.h"
+// #include "ARMCM7.h"
+// // #include "core_cm7.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -90,14 +92,19 @@ void __exidx_end() { }
 int main(int argc, char ** argv) {
 
   printf("Tiny C Compiler v0.0.1\n");
-  eadk_timing_msleep(1000);
+  eadk_timing_msleep(2000);
 
   printf("Reading from 'tcc.py' file...\n");
-  eadk_timing_msleep(1000);
+  eadk_timing_msleep(2000);
 
   // We read "tcc.py"
   size_t file_len = 0;
   const char * code_from_file = extapp_fileRead("tcc.py", &file_len);
+
+  if (code_from_file == NULL && file_len <= 0) {
+    printf("Couldn't read 'tcc.py' !\n");
+    eadk_timing_msleep(2000);
+  }
 
   // DONE: I wasn't able to compile while depending on external data, but it works if reading from a local 'tcc.py' file.
   // const char * code = eadk_external_data;
@@ -106,8 +113,11 @@ int main(int argc, char ** argv) {
 
   // From https://github.com/Tiny-C-Compiler/tinycc-mirror-repository/blob/mob/tests/libtcc_test.c
   int (*func_main_our_code)(int);
-  TCCState *tcc_state;
 
+  printf("Creating TCC state...\n");
+  eadk_timing_msleep(2000);
+
+  TCCState *tcc_state;
   tcc_state = tcc_new();
   if (!tcc_state) {
     fprintf(stderr, "ERR: failed create TCC state\n");
@@ -117,23 +127,31 @@ int main(int argc, char ** argv) {
   }
 
   // Initialize your TCC heap (reset the bump allocator)
+  // printf("Initialiez our TCC heap...\n");
+  // eadk_timing_msleep(2000);
   // tcc_numworks_heap_init();
 
-  // Set custom memory allocators
-  // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
+  // // Set custom memory allocators, from our tcc_stubs implementation:
+  // // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
   // tcc_set_realloc(numworks_tcc_realloc);
+
+  // Use stdlib's memory allocators:
+  printf("tcc_set_realloc(realloc)\n");
+  eadk_timing_msleep(2000);
   // tcc_set_realloc(malloc, realloc, free);
   tcc_set_realloc(realloc);
 
   // set custom error/warning printer
+  printf("tcc_set_error_func(...)\n");
+  eadk_timing_msleep(2000);
   tcc_set_error_func(tcc_state, stderr, handle_error);
 
   // Getting ready to execute the code
-  printf("Executing code...\n");
-  eadk_timing_msleep(1000);
 
   // MUST BE CALLED before any compilation
   // the output type is in memory, not on a file
+  printf("tcc_set_output_type(...)\n");
+  eadk_timing_msleep(2000);
   tcc_set_output_type(tcc_state, TCC_OUTPUT_MEMORY);
 
   // TODO: first test a tiny C code, then more!
@@ -143,6 +161,9 @@ int main(int argc, char ** argv) {
   // TODO: then from the local storage
   // const char * code_to_execute = code;
 
+  printf("tcc_compile_string(...)\n");
+  eadk_timing_msleep(2000);
+
   if (tcc_compile_string(tcc_state, code_to_execute) == -1) {
     fprintf(stderr, "ERR: couldn't compile\n");
     tcc_delete(tcc_state); // delete the state
@@ -150,15 +171,18 @@ int main(int argc, char ** argv) {
     return 1;
   }
 
-  // as a test, we add symbols that the compiled program can use.
-  // You may also open a dll with tcc_add_dll() and use symbols from that
-  tcc_add_symbol(tcc_state, "add", add);
-  tcc_add_symbol(tcc_state, "eadk_timing_msleep_int", eadk_timing_msleep_int);
-  tcc_add_symbol(tcc_state, "hello", hello);
+  // FIXME: try this!
+  // // as a test, we add symbols that the compiled program can use.
+  // // You may also open a dll with tcc_add_dll() and use symbols from that
+  // printf("3 tcc_add_symbol(...)\n");
+  // eadk_timing_msleep(2000);
+  // tcc_add_symbol(tcc_state, "add", add);
+  // tcc_add_symbol(tcc_state, "eadk_timing_msleep_int", eadk_timing_msleep_int);
+  // tcc_add_symbol(tcc_state, "hello", hello);
 
-  // FIXME: this tcc_relocate
   // Relocate the code (prepare for execution)
-  // if (tcc_relocate(tcc_state, TCC_RELOCATE_AUTO) < 0) { // XXX: didn't work
+  printf("tcc_relocate(tcc_state)\n");
+  eadk_timing_msleep(2000);
   if (tcc_relocate(tcc_state) < 0) {
     fprintf(stderr, "ERR: couldn't relocate code\n");
     tcc_delete(tcc_state); // delete the state
@@ -180,7 +204,13 @@ int main(int argc, char ** argv) {
   // Before jumping to the compiled code, you MUST invalidate the instruction cache.
   // The exact CMSIS function name might vary slightly based on your specific
   // NumWorks SDK or HAL, but it's typically:
+
+  printf("SCB_CleanDCache()\n");
+  eadk_timing_msleep(2000);
   SCB_CleanDCache();       // Flush any pending data writes to memory
+
+  printf("SCB_InvalidateICache()\n");
+  eadk_timing_msleep(2000);
   SCB_InvalidateICache();  // Invalidate instruction cache to ensure new code is fetched
   // Or if you can target a specific region:
   // SCB_CleanDCache_by_addr(start_addr, size);
@@ -188,18 +218,25 @@ int main(int argc, char ** argv) {
   // Finding start_addr and size: TCC doesn't easily expose this, often
   // you'd invalidate the entire heap where code could be.
 
+  printf("Launching main(42)...\n");
+  eadk_timing_msleep(2000);
+
   // run the compiled code, print the return value (for debugging)
-  // int ret_val = func_main_our_code(42);
-  int ret_val = tcc_run(tcc_state, argc, argv);
+  int ret_val = func_main_our_code(42);
+  // int ret_val = tcc_run(tcc_state, argc, argv);
 
   fprintf(stderr, "Return: %d\n", ret_val);
   eadk_timing_msleep(2000);
-
+  printf("Return: %d\n", ret_val);
+  eadk_timing_msleep(2000);
+  
   // Clean up TCC state
+  printf("tcc_delete(tcc_state)...\n");
+  eadk_timing_msleep(2000);
   tcc_delete(tcc_state); // delete the state
 
-  eadk_timing_msleep(2000);
-  printf("End of interpretation of 'tcc.py'...\n");
+  // printf("End of interpretation of 'tcc.py'...\n");
+  printf("End of TCC main()\n");
   eadk_timing_msleep(2000);
 
   return 0;

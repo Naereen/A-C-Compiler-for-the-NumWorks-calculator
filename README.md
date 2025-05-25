@@ -3,7 +3,7 @@
 [![Build](https://github.com/Naereen/A-C-Compiler-for-the-NumWorks-calculator/actions/workflows/build.yml/badge.svg)](https://github.com/Naereen/A-C-Compiler-for-the-NumWorks-calculator/actions/workflows/build.yml)
 
 **Ideal goal:** This apps lets you compile run a tiny [C program](https://en.wikipedia.org/wiki/C_(programming_language)) on your [NumWorks calculator](https://www.numworks.com)!
-[![JavaScript logo](./src/icon.png)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![C programming language logo](./src/icon.png)](https://en.wikipedia.org/wiki/C_(programming_language))
 
 ## Install the app
 

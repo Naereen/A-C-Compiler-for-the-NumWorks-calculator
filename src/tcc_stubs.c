@@ -133,7 +133,7 @@ int mprotect(void *addr, size_t len, int prot) {
 // Start with a conservative size, e.g., 64KB (64 * 1024).
 // The maximum you can allocate here is the TOTAL remaining free SRAM
 // AFTER the NumWorks firmware and your app's core code/data.
-#define TCC_HEAP_SIZE (64 * 1024) // Example: 64KB
+#define TCC_HEAP_SIZE (16 * 1024) // Example: 16KB
 
 // Declare the TCC heap buffer
 // It's uninitialized, so it goes into .bss (saving flash space).
