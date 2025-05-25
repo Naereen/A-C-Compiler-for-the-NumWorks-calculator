@@ -50,14 +50,14 @@ cd src/tinycc.git/
 make arm-eabihf-libtcc.a
 ```
 
-You should obtain a static library named `arm-eabi-libtcc1.a` (which wights about 513K on my machine):
+You should obtain a static library named `arm-eabi-libtcc1.a` (which wights about 530K on my machine):
 
 ```shell
 $ ls -larth src/tinycc.git/arm-eabihf-libtcc.a
--rw-rw-r-- 1 lilian lilian 513K mai   24 17:36 arm-eabihf-libtcc.a
+-rw-rw-r-- 1 lilian lilian 530K mai   24 17:36 arm-eabihf-libtcc.a
 
 $ du -b     src/tinycc.git/arm-eabihf-libtcc.a
-524774  arm-eabihf-libtcc.a
+542542  arm-eabihf-libtcc.a
 
 $ file      src/tinycc.git/arm-eabihf-libtcc.a
 arm-eabihf-libtcc.a: current ar archive

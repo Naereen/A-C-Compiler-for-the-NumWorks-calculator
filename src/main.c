@@ -26,11 +26,28 @@
 #include <stdint.h>
 #include <string.h>
 
-
+// The handle_error functions is just a printf + msleep(2000) write now
 void handle_error(void *opaque, const char *msg) {
   // fprintf(opaque, "%s\n", msg);
   printf("%s\n", msg);
   eadk_timing_msleep(2000);
+}
+
+// A simple wrapper around stdlib's realloc for TCC
+void *wrapper_around_realloc(void *ptr, size_t size) {
+    // Optional debug print
+    printf("TCC_REALLOC(%p, %i)\n", ptr, size);
+    eadk_timing_msleep(200);
+    // Just call the stdlib's realloc(ptr, size)
+    void * result = realloc(ptr, size);
+    // if (ptr != NULL && size > 0 && result == NULL) {
+    if (ptr == NULL || size <= 0 || result == NULL) {
+      // Optional debug print
+      printf("TCC_REALLOC: got NULL\n");
+      eadk_timing_msleep(2000);
+
+    }
+    return result;
 }
 
 // TODO: write a wrapper file/lib so that the C code interpreted on the NumWorks has correct access to the EADK lib!
@@ -93,7 +110,7 @@ void __exidx_end() { }
 // int main() {
 int main(int argc, char ** argv) {
 
-  printf("Tiny C Compiler v0.0.3\n");
+  printf("Tiny C Compiler v0.0.4\n");
   eadk_timing_msleep(2000);
 
   printf("Reading from 'tcc.py' file...\n");
@@ -140,9 +157,9 @@ int main(int argc, char ** argv) {
   // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
 
   // // Use stdlib's memory allocators:
-  // printf("tcc_set_realloc(realloc)\n");
+  // printf("tcc_set_realloc(wrapper_around_realloc)\n");
   // eadk_timing_msleep(2000);
-  // tcc_set_realloc(realloc);
+  // tcc_set_realloc(wrapper_around_realloc);
   // // tcc_set_realloc(malloc, realloc, free);
 
   // set custom error/warning printer

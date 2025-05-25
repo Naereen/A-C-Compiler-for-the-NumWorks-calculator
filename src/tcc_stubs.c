@@ -1,6 +1,6 @@
 // tcc_stubs.c
 
-#include <stdlib.h> // For NULL, size_t
+#include <stdlib.h> // For NULL, size_t, malloc, realloc
 #include <string.h> // For strcpy, strlen
 #include <stdio.h>  // For printf
 #include <eadk.h>   // For eadk_timing_msleep
@@ -96,7 +96,7 @@ int mprotect(void *addr, size_t len, int prot) {
     // However, for simplicity, a direct return 0 is often sufficient.
 
     // You can add a debug print if you want to see when TCC calls this
-    printf("mprotect(%p, %zu, %d)\n", addr, len, prot);
+    printf("mprotect(%p, %i, %d)\n", addr, len, prot);
     eadk_timing_msleep(1000);
 
     // It's generally safe to just return success on platforms where memory
@@ -136,6 +136,7 @@ int mprotect(void *addr, size_t len, int prot) {
 // Custom realloc function
 //
 
+
 #include <stdint.h> // For uint8_t
 #include <stddef.h> // For size_t
 
@@ -149,14 +150,14 @@ int mprotect(void *addr, size_t len, int prot) {
 
 // Declare the TCC heap buffer
 // It's uninitialized, so it goes into .bss (saving flash space).
-static uint8_t s_tcc_heap_buffer[TCC_HEAP_SIZE] = {0};
+static uint8_t s_tcc_heap_buffer[TCC_HEAP_SIZE];// = {0};
 static size_t s_tcc_heap_current_offset = 0; // Current allocation pointer for bump allocator
 
 // Function to reset the heap (call before each TCC compilation session if needed)
 void tcc_numworks_heap_init() {
     s_tcc_heap_current_offset = 0;
-    // Optionally, clear the buffer for debugging
-    // memset(s_tcc_heap_buffer, 0, TCC_HEAP_SIZE);
+    // // Optionally, clear the buffer for debugging
+    // memset(s_tcc_heap_buffer, 0, TCC_HEAP_SIZE);  // FIXME: this fails?
 }
 
 // Your custom free for TCC (no-op for a bump allocator)
@@ -175,7 +176,7 @@ void *numworks_tcc_malloc(size_t size) {
         // Out of memory within our designated TCC heap
         // You MUST log this or display on screen for debugging
         // For example:
-        printf("TCC_MALLOC FAIL: Req %zuB, Free %zuB\n", size, TCC_HEAP_SIZE - s_tcc_heap_current_offset);
+        printf("TCC_MALLOC FAIL: Req %iB, Free %iB\n", size, TCC_HEAP_SIZE - s_tcc_heap_current_offset);
         eadk_timing_msleep(1000);
         return NULL;
     }
@@ -184,10 +185,10 @@ void *numworks_tcc_malloc(size_t size) {
     s_tcc_heap_current_offset += aligned_size;
 
     // Optional debug print
-    printf("TCC_MALLOC: Req %zu (aligned %zu)\n", size, aligned_size);
-    eadk_timing_msleep(1000);
-    printf("TCC_MALLOC: Got %p, Offset %zu\n", ptr, s_tcc_heap_current_offset);
-    eadk_timing_msleep(1000);
+    printf("TCC_MALLOC: Req %i (aligned %i)\n", size, aligned_size);
+    eadk_timing_msleep(200);
+    printf("TCC_MALLOC: Got %p, Offset %i\n", ptr, s_tcc_heap_current_offset);
+    eadk_timing_msleep(200);
     return ptr;
 }
 
