@@ -40,6 +40,17 @@ LDFLAGS += $(shell $(NWLINK) eadk-ldflags-device)
 CFLAGS += -I$(TCC_LIB_DIR)
 LDFLAGS += -L$(TCC_LIB_DIR)
 
+# To enable the FPU in CMSIS and fix the IRQn errors
+CFLAGS += -D__FPU_PRESENT=1
+CFLAGS += -D__FPU_USED=1
+CFLAGS += -D__NVIC_PRIO_BITS=4
+CFLAGS += -DCMSIS_device_header="stm32f7xx.h"
+
+# Include the CMSIS library directories
+CFLAGS += -I./src/cmsis/cmsis-device-f7/Include/
+CFLAGS += -I./src/cmsis/CMSIS/Core/Include/
+CFLAGS += -I./src/cmsis/Device/ARM/ARMCM7/Include/
+
 # This is the embedded *runtime* library, NOT the one we want!
 # CLIBS += -l:arm-eabi-libtcc1.a
 # LDLIBS += -l:arm-eabi-libtcc1.a
@@ -103,7 +114,7 @@ output/%.elf: output/%.nwa src/test.c
 
 output/tiny-c-compiler.nwa: $(objs)
 	@echo "LD      $@"
-	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -lm $(LDLIBS) -lCMSIS_CORE
+	$(Q) $(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -lm $(LDLIBS)
 
 output/%.o: src/%.c
 	@mkdir -p $(@D)

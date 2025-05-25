@@ -6,12 +6,14 @@
 #include "crt_stubs.h"
 #include "tcc_stubs.h"
 
-// ADD THIS LINE
-// Or <stm32f7xx_hal.h> or <core_cm7.h>
-// The exact path depends on NumWorks's SDK structure.
-// Try <stm32f7xx.h> first, or <core_cm7.h> if that's available directly.
-// Or look for a file like "stm32f7xx_hal_cortex.h"
-#include "core_cm7.h"
+#define __FPU_PRESENT 1
+#define __FPU_USED 1
+// TODO: this should come from https://github.com/STMicroelectronics/cmsis-device-f7
+#include "stm32f7xx.h"
+// TODO: this should come from https://github.com/ARM-software/CMSIS_5/releases/tag/5.9.0
+// #include "ARMCM4_FP.h"
+#include "ARMCM7.h"
+// #include "core_cm7.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -100,11 +102,11 @@ int main(int argc, char ** argv) {
   // DONE: I wasn't able to compile while depending on external data, but it works if reading from a local 'tcc.py' file.
   // const char * code = eadk_external_data;
 
-  const char * code = (code_from_file == NULL && file_len <= 0) ? "printf(\"\\nHi from C interpreter! sleep(3s)\")\neadk_timing_msleep_int(3000)\nreturn 0;" : (code_from_file + 1);
+  const char * code = (code_from_file == NULL && file_len <= 0) ? "int main(int n) {\nreturn 42;\n}" : (code_from_file + 1);
 
   // From https://github.com/Tiny-C-Compiler/tinycc-mirror-repository/blob/mob/tests/libtcc_test.c
-  TCCState *tcc_state;
   int (*func_main_our_code)(int);
+  TCCState *tcc_state;
 
   tcc_state = tcc_new();
   if (!tcc_state) {
@@ -115,7 +117,7 @@ int main(int argc, char ** argv) {
   }
 
   // Initialize your TCC heap (reset the bump allocator)
-  tcc_numworks_heap_init();
+  // tcc_numworks_heap_init();
 
   // Set custom memory allocators
   // tcc_set_realloc(numworks_tcc_malloc, numworks_tcc_realloc, numworks_tcc_free);
